@@ -6,7 +6,88 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
-<body>
-    
+<body style="margin:100px">
+    <canvas id="canvas" width="500" height="500" style ="border:solid 4px; border-color: #111111; background-color:green;"></canvas>
+    <div id="app">
+    </div>
+    <script>
+        
+        //Model
+
+        let canvas, ctx;
+        let a = ''
+        let speed = 1;
+
+        let xPos = 250;
+        let yPos = 250;
+
+        let dirX = 0;
+        let dirY = 0;
+        //View
+
+        function showapp(){
+
+            xPos += speed * dirX;
+            yPos += speed * dirY;
+            if(xPos<0 || xPos>canvas.width-25)
+            {
+                speed = 0;
+            }
+
+            if(yPos<0 || yPos>canvas.height-25)
+            {
+                speed = 0;
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.fillRect(xPos, yPos, 25, 25)
+            ctx.stroke();
+
+            document.getElementById('app').innerHTML= /*html*/`
+            
+            <h1>Snake Game</h1>
+            `
+        }
+ 
+        //Controller
+        
+        window.onload = function()
+        {
+            document.addEventListener("keydown", keyDownEvent);
+            a = 1; 
+
+            canvas = document.getElementById("canvas");
+            ctx = canvas.getContext("2d");
+            showapp();
+            setInterval(showapp, 16.67);
+        }
+
+        function keyDownEvent(e)
+        {
+            switch (e.keyCode)
+            {
+                case 37:
+                    dirY = 0;
+                    dirX = -1;
+                    break;
+                case 38:
+                    dirX = 0;
+                    dirY = -1;
+                    break;
+                case 39:
+                    dirY = 0;
+                    dirX = 1;
+                    break;
+                case 40:
+                    dirX = 0;
+                    dirY = 1;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+    </script>
 </body>
 </html>
