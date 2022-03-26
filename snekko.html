@@ -16,37 +16,69 @@
 
         let canvas, ctx;
         let a = ''
-        let speed = 1;
+        let speed = 2.5;
 
         let xPos = 250;
         let yPos = 250;
 
         let dirX = 0;
         let dirY = 0;
+        let status = "Start!";
+
+        let gameover = false;
+        //snake
+        let snakeLength = 15;
+        let snakeTrail = []; 
+        let snakeWidth = 10;
+
         //View
 
         function showapp(){
 
+            snakeLength +=5;
+
             xPos += speed * dirX;
             yPos += speed * dirY;
-            if(xPos<0 || xPos>canvas.width-25)
+
+            if(xPos<0 || xPos>canvas.width-snakeWidth)
             {
+                gameOver();
                 speed = 0;
             }
-
-            if(yPos<0 || yPos>canvas.height-25)
+            
+            if(yPos<0 || yPos>canvas.height-snakeWidth)
             {
+                gameOver();
                 speed = 0;
             }
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.beginPath();
-            ctx.fillRect(xPos, yPos, 25, 25)
+
+            
+            for(let i = snakeTrail.length-1; i>=0; i--)
+            {
+                if(gameover == false)
+                {
+                    if(i==0)
+                    {
+                        snakeTrail[i].x = xPos;
+                        snakeTrail[i].y = yPos;
+                    }
+                    else
+                    {
+                        snakeTrail[i].x = snakeTrail[i-1].x; 
+                        snakeTrail[i].y = snakeTrail[i-1].y; 
+                    }
+                }
+                ctx.fillRect( snakeTrail[i].x,snakeTrail[i].y, snakeWidth, snakeWidth);
+            }
+                
             ctx.stroke();
 
             document.getElementById('app').innerHTML= /*html*/`
             
-            <h1>Snake Game</h1>
+            <h1>${status}</h1>
             `
         }
  
@@ -57,10 +89,30 @@
             document.addEventListener("keydown", keyDownEvent);
             a = 1; 
 
+            for(let i=0; i < snakeLength; i++)
+            {
+                snakeTrail.push({ x: xPos + (snakeWidth*i), y: yPos});
+            }
+
             canvas = document.getElementById("canvas");
             ctx = canvas.getContext("2d");
             showapp();
             setInterval(showapp, 16.67);
+            setInterval(addToSnake, 2000, 10);
+        }
+
+        function addToSnake(numToAdd)
+        {
+            for(let i=0; i < numToAdd; i++)
+            {
+                snakeTrail.push({ x: xPos, y: yPos});
+            }
+        }
+
+        function gameOver()
+        {
+            gameover = true;
+            status = "Game Over!";
         }
 
         function keyDownEvent(e)
