@@ -13,29 +13,43 @@
     <script>
         
         //Model
-
         let canvas, ctx;
-        let a = ''
-        let speed = 2.5;
+        
+        let ISpeed = 2.5;
+        let speed = ISpeed;
+        
+        let IxPos = 250;
+        let IyPos = 250;
+        let xPos = IxPos;
+        let yPos = IyPos;
 
-        let xPos = 250;
-        let yPos = 250;
+        let appleX = getRndInteger(10,480);
+        let appleY = getRndInteger(10,480);
+        let appleWidth = 10;
+        
+        let IdirX = 0;
+        let IdirY = 0;
+        let dirX = IdirX;
+        let dirY = IdirY;
 
-        let dirX = 0;
-        let dirY = 0;
+        let collision = false;
+
+        //let front = dirX+faen dirY+oops;
         let status = "Start!";
 
         let gameover = false;
+        let gameRunning = false;
+
         //snake
-        let snakeLength = 15;
-        let snakeTrail = []; 
+        let ISnakeLength = 30;
+        let snakeLength = 0;
+
+        let snakeTrail = [];
         let snakeWidth = 10;
 
         //View
 
         function showapp(){
-
-            snakeLength +=5;
 
             xPos += speed * dirX;
             yPos += speed * dirY;
@@ -43,22 +57,21 @@
             if(xPos<0 || xPos>canvas.width-snakeWidth)
             {
                 gameOver();
-                speed = 0;
             }
             
             if(yPos<0 || yPos>canvas.height-snakeWidth)
             {
                 gameOver();
-                speed = 0;
             }
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle="rgba(0,0,0,1)";
             ctx.beginPath();
 
             
             for(let i = snakeTrail.length-1; i>=0; i--)
             {
-                if(gameover == false)
+                if(gameover == false || gameRunning == false)
                 {
                     if(i==0)
                     {
@@ -73,32 +86,85 @@
                 }
                 ctx.fillRect( snakeTrail[i].x,snakeTrail[i].y, snakeWidth, snakeWidth);
             }
+            ctx.fillStyle="rgba(200,0,0,1)";
+
                 
+            ctx.fillRect(appleX, appleY, appleWidth, appleWidth);
+
             ctx.stroke();
 
             document.getElementById('app').innerHTML= /*html*/`
             
             <h1>${status}</h1>
             `
+
+            if(gameRunning && !gameover)
+            {
+                for (let i = 1; i < snakeLength; i++) 
+                {
+                    let collision = Overlap(snakeTrail[0].x,snakeTrail[0].y, snakeTrail[i].x, snakeTrail[i].y);
+                    if(collision)
+                    {
+                        gameOver();
+                    }
+                }
+
+                let appleCollision = OverlapApple(snakeTrail[0].x, snakeTrail[0].y, appleX, appleY);
+                
+                if(appleCollision)
+                {
+                    appleEaten();
+                }
+
+            }
         }
  
         //Controller
-        
-        window.onload = function()
-        {
-            document.addEventListener("keydown", keyDownEvent);
-            a = 1; 
 
-            for(let i=0; i < snakeLength; i++)
-            {
-                snakeTrail.push({ x: xPos + (snakeWidth*i), y: yPos});
-            }
+
+        function appleEaten()
+        {
+            appleX = getRndInteger(10,480);
+            appleY = getRndInteger(10,480);
+
+            addToSnake(15);
+        }
+
+        function LoadWindow(){
+            document.addEventListener("keydown", keyDownEvent);
+
+            addToSnake(ISnakeLength);
 
             canvas = document.getElementById("canvas");
             ctx = canvas.getContext("2d");
             showapp();
+
+        }
+
+        function Default(){
+            speed = ISpeed;
+            xPos = IxPos;
+            yPos = IyPos;
+
+            dirX = IdirX;
+            dirY = IdirY;
+            status = "Start!";
+
+            gameover = false;
+            gameRunning = false;
+            snakeLength = 0;
+            snakeTrail = []; 
+
+            appleX = getRndInteger(10,480);
+            appleY = getRndInteger(10,480);
+
+        }
+
+        
+        window.onload = function(){
+
+            LoadWindow();
             setInterval(showapp, 16.67);
-            setInterval(addToSnake, 2000, 10);
         }
 
         function addToSnake(numToAdd)
@@ -107,39 +173,79 @@
             {
                 snakeTrail.push({ x: xPos, y: yPos});
             }
+            snakeLength += numToAdd;
         }
 
-        function gameOver()
-        {
+        function gameOver(){
+            speed = 0;
             gameover = true;
             status = "Game Over!";
         }
 
-        function keyDownEvent(e)
+        function Overlap(x1,y1,x2,y2)
         {
-            switch (e.keyCode)
+            if(x1 ==x2 && y1 == y2)
             {
+                console.log("Overlap!");
+                return true;
+            }
+        }
+        
+        function OverlapApple(x1,y1,x2,y2)
+        {
+            if(x1 < x2 + 10 && 
+                x1+10 >x2   &&
+                y1 < y2+10 &&
+                y1+10 > y2)
+            {
+                console.log("Overlap!");
+                return true;
+            }
+        }
+
+        function getRndInteger(min, max) 
+        {
+            return Math.floor(Math.random() * (max - min) ) + min;
+        }
+
+        function keyDownEvent(e){
+            switch (e.keyCode){
                 case 37:
-                    dirY = 0;
-                    dirX = -1;
+                    if(dirX != 1){
+                        dirY = 0;
+                        dirX = -1;
+                        gameRunning = true;
+                    }
                     break;
                 case 38:
-                    dirX = 0;
-                    dirY = -1;
+                    if(dirY != 1){
+                        dirX = 0;
+                        dirY = -1;
+                        gameRunning = true;
+                    }
                     break;
                 case 39:
-                    dirY = 0;
-                    dirX = 1;
+                    if(dirX != -1){
+                        dirY = 0;
+                        dirX = 1;
+                        gameRunning = true;
+                    }
                     break;
                 case 40:
-                    dirX = 0;
-                    dirY = 1;
+                    if(dirY != -1){
+                        dirX = 0;
+                        dirY = 1;
+                        gameRunning = true;
+                    }
                     break;
                 default:
                     break;
             }
+            if (gameover == true && e.keyCode == 32){
+                Default();
+                LoadWindow();
+            }
         }
-
     </script>
 </body>
 </html>
